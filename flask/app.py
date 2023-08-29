@@ -1,27 +1,23 @@
 import math
+from matplotlib import cm
 import matplotlib.pyplot as plt
-from flask import Flask
-from flask import request, jsonify
+from flask import Flask, render_template
 import csv
+from pylab import *
 app = Flask(__name__)
 app.config["DEBUG"] = True
 
+# Helper function that calculates the sum of the concentration and the total count of entries. returns both in a tuple in form (sum, count)
 def calculate_sum_count():
-    with open('concentration.timeseries.csv', 'r') as file:
-        total_concentration = 0
-        total_count = 0
+    with open('raw_data/concentration.timeseries.csv', 'r') as file:
+        sum_concentration, total_count = 0, 0
         csvreader = csv.reader(file)
-        # grab the headers of each row to determine which row the concentration is in
+        # grab the headers of each column
         headers = next(csvreader)
-        index = 0
-        for i in range(len(headers)):
-            if headers[i] == 'concentration':
-                index = i
-                break
         for row in csvreader:
-            total_concentration += float(row[index])
+            sum_concentration += float(row[headers.index('concentration')])
             total_count += 1
-    return total_concentration, total_count
+    return sum_concentration, total_count
 
 # Endpoint that returns mean of the concentration
 @app.route('/get-mean', methods = ['GET'])
@@ -33,17 +29,12 @@ def api_mean():
 def api_std_deviation():
     mean = calculate_sum_count()[0]/calculate_sum_count()[1]
     distance_from_mean_sum = 0
-    with open('concentration.timeseries.csv', 'r') as file:
+    with open('raw_data/concentration.timeseries.csv', 'r') as file:
         csvreader = csv.reader(file)
-        # grab the headers of each row to determine which row the concentration is in
+        # grab the headers of each column
         headers = next(csvreader)
-        index = 0
-        for i in range(len(headers)):
-            if headers[i] == 'concentration':
-                index = i
-                break
         for row in csvreader:
-            distance_from_mean_sum += (float(row[index]) - mean) ** 2
+            distance_from_mean_sum += (float(row[headers.index('concentration')]) - mean) ** 2
         standard_deviation = math.sqrt(distance_from_mean_sum/calculate_sum_count()[1])
     return 'The standard deviation of the concentration is ' + str(standard_deviation) + '.'
 
@@ -55,29 +46,31 @@ def api_sum():
 # Endpoint that returns the png visualization of the concentration
 @app.route("/get-image",  methods = ['GET'])
 def api_image():
-    with open('concentration.timeseries.csv', 'r') as file:
-        x_values, y_values = [], []
+    with open('raw_data/concentration.timeseries.csv', 'r') as file:
+        x_values, y_values, z_values, concentration_values = [], [], [], []
         csvreader = csv.reader(file)
-        # grab the headers of each row to determine which row the x and y values are in
+        # grab the headers of each column
         headers = next(csvreader)
-        x_index = 0
-        y_index = 0
-        for i in range(len(headers)):
-            if headers[i] == 'x':
-                x_index = i
-                continue
-            if headers[i] == 'y':
-                y_index = i
-                continue
         for row in csvreader:
-            x_values.append(float(row[x_index]))
-            y_values.append(float(row[y_index]))
-        plt.plot(x_values, y_values)
-        plt.xlabel('x - axis')
-        plt.ylabel('y - axis')
-        plt.title('Visualization of the concentration')
-        plt.show()
-    return 'this is the png visualization'
+            x_values.append(float(row[headers.index('x')]))
+            y_values.append(float(row[headers.index('y')]))
+            z_values.append(float(row[headers.index('z')]))
+            concentration_values.append(float(row[headers.index('concentration')]))
+        # plot the values and save as a png
+        matplotlib.use('agg')
+        fig = plt.figure(figsize=(10,10))
+        ax = fig.add_subplot(111, projection='3d')
+        color_map = cm.ScalarMappable(cmap=cm.hsv)
+        color_map.set_array(concentration_values)
+        ax.scatter(x_values, y_values, z_values, marker='s', s=200, c=cm.hsv([i / max(concentration_values) for i in concentration_values]))
+        plt.colorbar(color_map, None, plt.gca())
+        ax.set_title("3D Heatmap of Concentration")
+        ax.set_xlabel('X-axis')
+        ax.set_ylabel('Y-axis')
+        ax.set_zlabel('Z-axis')
+        filename = 'static/concentration_heat_map.png'
+        plt.savefig(filename)
+        return render_template("index.html", user_image=filename)
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000)
