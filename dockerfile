@@ -6,5 +6,5 @@ RUN pip install --upgrade pip
 WORKDIR /app
 COPY . /app
 RUN pip --no-cache-dir install -r requirements.txt
-WORKDIR /app/flask
-CMD ["python3", "app.py"]
+WORKDIR /app/app
+CMD python3 -m pytest && python3 app.py

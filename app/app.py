@@ -4,12 +4,16 @@ import matplotlib.pyplot as plt
 from flask import Flask, render_template
 import csv
 from pylab import *
+import os
+
 app = Flask(__name__)
 app.config["DEBUG"] = True
+filename = os.path.join(app.root_path, 'raw_data', 'concentration.timeseries.csv')
 
 # Helper function that calculates the sum of the concentration and the total count of entries. returns both in a tuple in form (sum, count)
 def calculate_sum_count():
-    with open('raw_data/concentration.timeseries.csv', 'r') as file:
+
+    with open(filename, 'r') as file:
         sum_concentration, total_count = 0, 0
         csvreader = csv.reader(file)
         # grab the headers of each column
@@ -29,7 +33,7 @@ def api_mean():
 def api_std_deviation():
     mean = calculate_sum_count()[0]/calculate_sum_count()[1]
     distance_from_mean_sum = 0
-    with open('raw_data/concentration.timeseries.csv', 'r') as file:
+    with open(filename, 'r') as file:
         csvreader = csv.reader(file)
         # grab the headers of each column
         headers = next(csvreader)
@@ -46,7 +50,7 @@ def api_sum():
 # Endpoint that returns the png visualization of the concentration
 @app.route("/get-image",  methods = ['GET'])
 def api_image():
-    with open('raw_data/concentration.timeseries.csv', 'r') as file:
+    with open(filename, 'r') as file:
         x_values, y_values, z_values, concentration_values = [], [], [], []
         csvreader = csv.reader(file)
         # grab the headers of each column
@@ -68,9 +72,9 @@ def api_image():
         ax.set_xlabel('X-axis')
         ax.set_ylabel('Y-axis')
         ax.set_zlabel('Z-axis')
-        filename = 'static/concentration_heat_map.png'
-        plt.savefig(filename)
-        return render_template("index.html", user_image=filename)
+        png_filename = 'static/concentration_heat_map.png'
+        plt.savefig(png_filename)
+        return render_template("index.html", user_image=png_filename)
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000)
