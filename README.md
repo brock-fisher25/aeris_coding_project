@@ -1,5 +1,3 @@
-Repository for coding project assigned by Aeris LLC
-
 ## Introduction
 
 Welcome to the documentation of the Aeris Coding Project.
