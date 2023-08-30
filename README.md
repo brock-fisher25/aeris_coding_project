@@ -1,6 +1,6 @@
 Repository for coding project assigned by Aeris LLC
 
-Introduction
+## Introduction
 
 Welcome to the documentation of the Aeris Coding Project.
 This documentation will help you understand exactly what the Aeris Coding Project is and how to get it up and running with using Docker.
@@ -9,8 +9,8 @@ The project introduces an API featuring four endpoints, each designed to provide
 Flask is used to define and create the API and endpoints within it.
 Docker is used to package/deploy the project as a Docker Image to other users.
 
+## Endpoints
 
-The endpoints are:
 - /get-mean
 
     Returns the mean of the concentration.
@@ -27,8 +27,11 @@ The endpoints are:
   
     Graphs the concentration into a 3D heat map that provides a visual of where the concentration is higher/lower.
 
+## Tests
 
-How to run/build the Docker Image:
+- I was able to write unit tests to make sure that 3 of my endpoints were returning values. Unfortunately, I was unable to get a unit test working for the /get-image endpoint.
+
+## How to run/build the Docker Image
 
 - This project uses a Docker Image to deploy, so make sure you have Docker installed on your PC.
 - If you do not have Docker installed on your PC, visit this link for installation instructions https://docs.docker.com/engine/install/
@@ -47,3 +50,13 @@ How to run/build the Docker Image:
     ```docker run -d -p 8000:5000 aeris_coding_project```
     
 - Once you have successfully began running the docker image, the API should be working on your localhost at port 5000 (http://127.0.0.1:5000). Test each endpoint mentioned above, and they all should return the desired information.
+
+## Commands
+
+Here are some other useful commands that I used while creating this:
+
+```docker ps``` - lists all currently running docker containers
+
+```docker kill [CONTAINER ID]``` - kills the current container specified by its ID
+
+```docker images``` - lists all docker images you have created on your PC
