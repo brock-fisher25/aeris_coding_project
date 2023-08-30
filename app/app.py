@@ -12,7 +12,6 @@ filename = os.path.join(app.root_path, 'raw_data', 'concentration.timeseries.csv
 
 # Helper function that calculates the sum of the concentration and the total count of entries. returns both in a tuple in form (sum, count)
 def calculate_sum_count():
-
     with open(filename, 'r') as file:
         sum_concentration, total_count = 0, 0
         csvreader = csv.reader(file)
